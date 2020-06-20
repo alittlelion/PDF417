@@ -1,5 +1,6 @@
-#include "CBarCodePDF417.h"
+﻿#include "CBarCodePDF417.h"
 #include <algorithm>
+#include <string.h>
 
 const int MAX_CODEWORD = 926;
 
@@ -22,7 +23,8 @@ CBarCodePDF417::CBarCodePDF417()
 
 CBarCodePDF417::CBarCodePDF417(std::string text)
 {
-	m_RawData = text;
+	m_Data = text;
+	m_RawData = reinterpret_cast<const unsigned char*>(m_Data.c_str());
 	m_PDFMODE = TCMODE;
 	memset(m_Codeword, 0, sizeof(m_Codeword));
 	codeptr = 0;
@@ -41,7 +43,8 @@ CBarCodePDF417::~CBarCodePDF417()
 
 void CBarCodePDF417::setText(std::string text)
 {
-	m_RawData = text;
+	m_Data = text;
+	m_RawData = reinterpret_cast<const unsigned char*>(m_Data.c_str());
 }
 
 void CBarCodePDF417::setErrorLevel(int level)
@@ -50,7 +53,7 @@ void CBarCodePDF417::setErrorLevel(int level)
 		m_level = level;
 }
 
-void CBarCodePDF417::ByteCompress(std::string &str, int length)
+void CBarCodePDF417::ByteCompress(const unsigned char *str, int length)
 {
 	int k = 0, j = 0;
 	int size = (length / 6) * 5 + (length % 6);
@@ -77,10 +80,10 @@ void CBarCodePDF417::ByteCompress(std::string &str, int length)
 
 }
 
-void CBarCodePDF417::Byte256To900(std::string &str, int start)
+void CBarCodePDF417::Byte256To900(const unsigned char *str, int start)
 {
 	int length = 6;
-	std::string text = str;
+	const unsigned char* text = str;
 	int *ret = m_Codeword + codeptr;
 	int retLast = 4;
 	int i, nk;
@@ -105,10 +108,10 @@ void CBarCodePDF417::Byte256To900(std::string &str, int start)
 	}
 }
 
-void CBarCodePDF417::TextCompress(std::string text, int length)
+void CBarCodePDF417::TextCompress(const unsigned char* text, int length)
 {
 	//空字符
-	if (text.empty())
+	if (!text)
 		return;
 
 	int mode = ALPHA;
@@ -274,7 +277,7 @@ void CBarCodePDF417::TextCompress(std::string text, int length)
 }
 
 
-int CBarCodePDF417::ParseData(char ch, int idx, int length)
+int CBarCodePDF417::ParseData(unsigned char ch, int idx, int length)
 {
 	if (idx > length)
 		return 0;
@@ -313,7 +316,7 @@ int CBarCodePDF417::ParseData(char ch, int idx, int length)
 
 
 
-void CBarCodePDF417::NumberCompress(std::string str,int length)
+void CBarCodePDF417::NumberCompress(const unsigned char* str,int length)
 {
 	//int length = m_RawData.length();
 	int full = (length / 44) * 15;
@@ -337,9 +340,9 @@ void CBarCodePDF417::NumberCompress(std::string str,int length)
 	}
 }
 
-void CBarCodePDF417::Number10To900(std::string str, int start, int size)
+void CBarCodePDF417::Number10To900(const unsigned char *str, int start, int size)
 {
-	std::string text = str;
+	const unsigned char* text = str;
 
 	int *ret = m_Codeword + codeptr;
 	int retLast = size / 3;
@@ -371,16 +374,18 @@ void CBarCodePDF417::Number10To900(std::string str, int start, int size)
 
 void CBarCodePDF417::InsertFillCode()
 {
-	if (m_RawData.empty())
-		return;
+	if (!m_RawData)
+		return;	
 
+	size_t t = strlen((char*)m_RawData);
+	
 	//记录数字连续出现次数，及需要插入模式锁定位置
 	int idx = 0;
-	std::string numberStr;				 //连续为数字的字符串
+	const unsigned char* numberStr;				 //连续为数字的字符串
 
 	//记录字符出现次数，及需要插入模式锁定位置
 	int charNumber = 0;
-	std::string str;               //当连续数字小于13,存储的文本字符串
+	const unsigned char* str;               //当连续数字小于13,存储的文本字符串
 	codeptr = 1;
 	std::vector<int> index;
 
@@ -389,7 +394,7 @@ void CBarCodePDF417::InsertFillCode()
 	std::vector<int> cnIndex;
 
 	int byte = 0;
-	for (int i = 0; i < m_RawData.length(); i++)
+	for (int i = 0; i < strlen((char*)m_RawData); i++)
 	{
 		char ch = m_RawData[i];
 
@@ -415,6 +420,7 @@ void CBarCodePDF417::InsertFillCode()
 		{
 			charNumber++;
 			str += ch;
+			idx = 0;
 		}
 
 		if (ch & 0x80)
@@ -422,6 +428,7 @@ void CBarCodePDF417::InsertFillCode()
 			byte++;		
 			cnIndex.push_back(i);
 			cnStr += ch;
+			idx = 0;
 		}
 
 	}
@@ -431,20 +438,20 @@ void CBarCodePDF417::InsertFillCode()
 	if ((m_RawData[0] >= ' ' || m_RawData[0] <= 127) && idx <13)
 	{
 		m_PDFMODE = TCMODE;
-		std::string linkStr;
-		if (idx < 13 && m_RawData.length() < 13 && byte == 0)
+		const unsigned char* linkStr;
+		if (idx < 13 && strlen((char*)m_RawData) < 13 && byte == 0)
 		{
-			TextCompress(m_RawData, m_RawData.length());
+			TextCompress(m_RawData, strlen((char*)m_RawData));
 		}
 		
-		else if (idx > 13)
+		else if (idx > 13 && byte == 0)
 		{
 			linkStr = str;
-			TextCompress(linkStr, linkStr.length());
+			TextCompress(linkStr, strlen((char*)linkStr));
 
 			m_PDFMODE = NCMODE;
 			m_Codeword[codeptr++] = m_PDFMODE;
-			NumberCompress(numberStr, numberStr.length());
+			NumberCompress(numberStr, strlen((char*)numberStr));
 		}
 
 		else if (byte != 0)
@@ -457,7 +464,7 @@ void CBarCodePDF417::InsertFillCode()
 		else
 		{		
 			linkStr = m_RawData;
-			TextCompress(linkStr, linkStr.length());
+			TextCompress(linkStr, strlen((char*)linkStr));
 
 		}
 	}
@@ -475,16 +482,16 @@ void CBarCodePDF417::InsertFillCode()
 		{
 			m_PDFMODE = TCMODE;
 			m_Codeword[codeptr++] = m_PDFMODE;
-			TextCompress(str, str.length());
+			TextCompress(str, strlen((char*)str));
 		}
-	}
-	
-	//Todo: 字节编码处理
-		
-	else if (byte != 0)
+	}		
+	//Todo: 字节编码处理		
+	else if (byte != 0 )
 	{
 		ByteToCodeWord(m_RawData);
 	}
+	
+	//ByteToCodeWord(m_RawData);
 	
 	m_CodeWordLength = codeptr;
 	m_Codeword[0] = codeptr;
@@ -675,7 +682,7 @@ void CBarCodePDF417::InsertIndicateCharat(int position,int value)
 
 void CBarCodePDF417::SortDataCodeWord()
 {
-	if (m_RawData.empty())
+	if (!m_RawData)
 		return;
 
 	InsertFillCode();
@@ -720,19 +727,20 @@ void CBarCodePDF417::CalaulateRowAndColumn()
 	{	
 		row = codeptr / 2;
 		column = 2;
-		//row = 3;
-		//column = 3;
+		
 	}
-	else if (codeptr >= 41 && codeptr < 160)
+	else if (codeptr >= 41 )
 	{		
-		row = codeptr / 4;
-		column = 4;
-	}
-	else if (codeptr >= 160 && codeptr < 320)
-	{		
-		row = codeptr / 8;
-		column = 8;
-	}
+		int a = 0;
+		for (int i = 41; i < codeptr;)
+		{
+			a++;
+			i += 40;
+		}
+
+		row = codeptr / (2 + a);
+		column = a + 2;
+	}	
 
 	m_Rows = row;
 	m_Columns = column;
@@ -801,12 +809,12 @@ std::vector<std::vector<int> > CBarCodePDF417::getBarSpace()const
 }
 
 
-void CBarCodePDF417::ByteToCodeWord(std::string str)
+void CBarCodePDF417::ByteToCodeWord(const unsigned char* str)
 {
-	if (str.empty())
+	if (!str)
 		return;	
 
-	int length = str.length();
+	int length = strlen((char*)str);
 	if (length % 6 != 0)
 		m_Codeword[codeptr++] = BCMODE;
 	else
@@ -821,16 +829,16 @@ void CBarCodePDF417::ByteToCodeWord(std::string str)
 
 		if (ch & 0x80)
 		{
-			byte = (ISBYTE + (ch & 0xff)) & 0xff;
-			byteBits.push_back(byte);
+			//byte = (ISBYTE + (ch & 0xff)) & 0xff;
+			byte = ch & 0xff;
+			byteBits.push_back(byte);			
 		}
 		else
 		{
 			byte = ch;
 			byteBits.push_back(byte);
 		}
-	}
-
+	}	
 	int bits;
 	long long total = 0;
 	int i= 0;
