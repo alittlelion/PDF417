@@ -9,11 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "BarCode/CPDF417.h"
-#include "BarCodeItem/barcodelib_global.h"
+#include "CPDF417.h"
 
 
-class BARCODELIB_EXPORT CBarCodePDF417
+class  CBarCodePDF417
 {
 public:
 	CBarCodePDF417();
@@ -22,141 +21,141 @@ public:
 
 	/**
 	*\brief
-	*ÉèÖÃ PDF417 ±àÂëÊı¾İ
+	*è®¾ç½® PDF417 ç¼–ç æ•°æ®
 	*/
 	void setText(std::string text);
 
 	/**
 	*\brief
-	*ÉèÖÃ¾À´íµÈ¼¶ 0 - 8 ¼¶
+	*è®¾ç½®çº é”™ç­‰çº§ 0 - 8 çº§
 	*/
 	void setErrorLevel(int level);
 
 
 	/**
 	*\brief
-	*BC Ä£Ê½±àÂë
+	*BC æ¨¡å¼ç¼–ç 
 	*/
 	void ByteCompress(const unsigned char *str,int length);
 
 	/**
 	*\brief
-	*TC Ä£Ê½±àÂë
+	*TC æ¨¡å¼ç¼–ç 
 	*/
 	void TextCompress(const unsigned char *str, int length);
 
 	/**
 	*\brief
-	*NC Ä£Ê½±àÂë
+	*NC æ¨¡å¼ç¼–ç 
 	*/
 	void NumberCompress(const unsigned char *str,int length);
 
 	/**
 	*\brief
-	*ÎÄ±¾Ñ¹ËõÄ£Ê½: ½âÎöÊı¾İÀàĞÍ,·µ»Ø×Ö·û×ÓÄ£Ê½ÀàĞÍ£º
-	*×ÓÄ£Ê½ÀàĞÍ: 1.ALPHA  2.LOWER   3.MIXED   4.PUNCTUATION
+	*æ–‡æœ¬å‹ç¼©æ¨¡å¼: è§£ææ•°æ®ç±»å‹,è¿”å›å­—ç¬¦å­æ¨¡å¼ç±»å‹ï¼š
+	*å­æ¨¡å¼ç±»å‹: 1.ALPHA  2.LOWER   3.MIXED   4.PUNCTUATION
 	*/
 	int ParseData(unsigned char data, int idx, int length);
 
 	/**
 	*\brief
-	*×Ö½ÚÑ¹ËõÄ£Ê½: Í¨¹ı»ù256µ½»ù900×ª»»
+	*å­—èŠ‚å‹ç¼©æ¨¡å¼: é€šè¿‡åŸº256åˆ°åŸº900è½¬æ¢
 	*/
 	void Byte256To900(const unsigned char *str,int k);
 
 
 	/**
-	*Êı×ÖÑ¹ËõÄ£Ê½:´Ó»ù10µ½»ù900×ª»»
+	*æ•°å­—å‹ç¼©æ¨¡å¼:ä»åŸº10åˆ°åŸº900è½¬æ¢
 	*/
 	void Number10To900(const unsigned char *str,int k, int size);
 
 
 	/**
 	*\brief
-	*½âÎöÎÄ±¾,²¢¸ù¾İÎÄ±¾ÀàĞÍÀ´²åÈëÌî³ä¡¢Ëø¶¨Âë×Ö
+	*è§£ææ–‡æœ¬,å¹¶æ ¹æ®æ–‡æœ¬ç±»å‹æ¥æ’å…¥å¡«å……ã€é”å®šç å­—
 	*/
 	void InsertFillCode();
 
 	/**
 	*\brief
-	*µ±Êı¾İÂë×Ö²»¹»Ìî³ä³ÉÒ»¸ö¾ØĞÎÊ±,²åÈëĞéÄâÌî³äÂë×Ö
+	*å½“æ•°æ®ç å­—ä¸å¤Ÿå¡«å……æˆä¸€ä¸ªçŸ©å½¢æ—¶,æ’å…¥è™šæ‹Ÿå¡«å……ç å­—
 	*/
 	void InsertVirtualCode();
 
 	/**
 	*\brief
-	*Ñ°ÕÒ´íÎóµÈ¼¶Êı
+	*å¯»æ‰¾é”™è¯¯ç­‰çº§æ•°
 	*/
 	int MaxPossibleErrLevel(int m);
 
 	/**
 	*\brief
-	*¸ù¾İ´íÎóµÈ¼¶¼ÆËã¾ÀÕıÂë×Ö,
+	*æ ¹æ®é”™è¯¯ç­‰çº§è®¡ç®—çº æ­£ç å­—,
 	*/
 	void CalculateErrorCorrection();
 
 	/**
 	*\brief
-	*²åÈë´íÎó¾ÀÕıÂë×Ö
+	*æ’å…¥é”™è¯¯çº æ­£ç å­—
 	*/
 	void InsertErrCode();
 
 	/**
 	*\brief
-	*¼ÆËã×óĞĞ¡¢ÓÒĞĞÖ¸Ê¾·û,ÓëÆğÊ¼·ûÁ¬½Ó£¬¼ÆËã¹«Ê½ÈçÏÂ:
+	*è®¡ç®—å·¦è¡Œã€å³è¡ŒæŒ‡ç¤ºç¬¦,ä¸èµ·å§‹ç¬¦è¿æ¥ï¼Œè®¡ç®—å…¬å¼å¦‚ä¸‹:
 	*		30xi + a, Ci = 0                   30xi + c, ci = 0
 	*
 	*Li =   30xi + b, Ci = 3            Ri  =  30xi + a, ci = 3
 	*
 	*		30xi + c, Ci = 6                   30xi + b, ci = 6 
 	*
-	*xi = int[(ĞĞºÅ-1£©/3], i =1,2,3,4,5 ...90¡£    Ci = µÚ i ĞĞ×åºÅ¡£
-	*a = int[(ĞĞÊı - 1) / 3]¡£     b = ´íÎó¾ÀÕıµÈ¼¶Êı * 3 + (ĞĞÊı - 1) % 3;
-	*c = Êı¾İÇøµÄÁĞÊı - 1¡£
+	*xi = int[(è¡Œå·-1ï¼‰/3], i =1,2,3,4,5 ...90ã€‚    Ci = ç¬¬ i è¡Œæ—å·ã€‚
+	*a = int[(è¡Œæ•° - 1) / 3]ã€‚     b = é”™è¯¯çº æ­£ç­‰çº§æ•° * 3 + (è¡Œæ•° - 1) % 3;
+	*c = æ•°æ®åŒºçš„åˆ—æ•° - 1ã€‚
 	*/
 	void CulculateIndicate(int row, int colume);
 	
 	/**
 	*\brief
-	*²åÈë×óĞĞºÍÓÒĞĞÖ¸Ê¾·û
+	*æ’å…¥å·¦è¡Œå’Œå³è¡ŒæŒ‡ç¤ºç¬¦
 	*/
 	void InsertIndicateCharat(int i,int value);
 
 	
 	/**
 	*\brief
-	*¸ù¾İÊı¾İÂë×ÖÊıÁ¿£¬¼ÆËãĞĞÊıºÍÁĞÊı
+	*æ ¹æ®æ•°æ®ç å­—æ•°é‡ï¼Œè®¡ç®—è¡Œæ•°å’Œåˆ—æ•°
 	*/
 	void CalaulateRowAndColumn();
 
 
 	/**
 	*\brief
-	*¶ÔÊı¾İÂë×Ö£¬¾À´íÂë×Ö£¬Ìî³äÂë×Ö£¬×óÓÒÖ¸Ê¾·û£¬ÆğÊ¼·û£¬ÖÕÖ¹·û£¬½øĞĞÅÅÁĞ³ÉÒ»¸ö¾ØÕó
+	*å¯¹æ•°æ®ç å­—ï¼Œçº é”™ç å­—ï¼Œå¡«å……ç å­—ï¼Œå·¦å³æŒ‡ç¤ºç¬¦ï¼Œèµ·å§‹ç¬¦ï¼Œç»ˆæ­¢ç¬¦ï¼Œè¿›è¡Œæ’åˆ—æˆä¸€ä¸ªçŸ©é˜µ
 	*/
 	void SortDataCodeWord();
 
 	/**
 	*\brief
-	*»ñÈ¡ÆğÊ¼·ûºÅµÄÌõ¿ÕĞòÁĞ
+	*è·å–èµ·å§‹ç¬¦å·çš„æ¡ç©ºåºåˆ—
 	*/
 	int getStartCharacters()const;
 
 	/**
 	*\brief
-	*»ñÈ¡ÖÕÖ¹·ûºÅµÄÌõ¿ÕĞòÁĞ,
+	*è·å–ç»ˆæ­¢ç¬¦å·çš„æ¡ç©ºåºåˆ—,
 	*/
 	int getEndCharacters()const;
 
 	/**
 	*\biref
-	*»ñÈ¡PDF417Âë×Ö¾ØÕóµÄÌõ¿ÕĞòÁĞ
+	*è·å–PDF417ç å­—çŸ©é˜µçš„æ¡ç©ºåºåˆ—
 	*/
 	std::vector<std::vector<int> > getBarSpace()const;
 
 	/**
 	*\brief
-	*ÖĞÎÄ×Ö½Ú×ª»»³ÉÂë×Ö
+	*ä¸­æ–‡å­—èŠ‚è½¬æ¢æˆç å­—
 	*/
 	void ByteToCodeWord(const unsigned char *str);
 
@@ -167,23 +166,23 @@ private:
 
 	PDF417MODE m_PDFMODE;
 
-	//´æ´¢Ô­Ê¼Êı¾İ×ª»»ºóµÄÂë×Ö
+	//å­˜å‚¨åŸå§‹æ•°æ®è½¬æ¢åçš„ç å­—
 	int m_Codeword[928];
 
 	int codeptr;
 
-	//Âë×Ö³¤¶È
+	//ç å­—é•¿åº¦
 	int m_CodeWordLength;
 
 	int m_Mode;
 
-	//´íÎóµÈ¼¶
+	//é”™è¯¯ç­‰çº§
 	int m_level;
 
-	//ÁĞÊı
+	//åˆ—æ•°
 	int m_Columns;
 
-	//ĞĞÊı
+	//è¡Œæ•°
 	int m_Rows;
 
 	std::vector<std::vector<int> > m_cluster;
